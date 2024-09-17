@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 const App = () => {
   const [length, setLength] = useState(7);
   const [numberAllowed, setNumberAllowed] = useState(false);
@@ -17,12 +17,19 @@ const App = () => {
     setPassword(pwd);
   }, [length, numberAllowed, charAllowed, setPassword]);
 
+  const passwordRef = useRef(null);
+
+  const copyPasswordToClipboard = useCallback(() => {
+    passwordRef.current?.select();
+    window.navigator.clipboard.writeText(password);
+  }, [password]);
+
   useEffect(() => {
     passwordGenerator();
   }, [length, numberAllowed, charAllowed, passwordGenerator]);
 
   return (
-    <div className=" mt-10 w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-6 text-orange-500 bg-gray-700">
+    <main className=" mt-10 w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-6 text-orange-500 bg-gray-700">
       <h1 className="text-white text-center mb-2">Password Generator</h1>
       <div className="flex shadow rounded-lg overflow-hidden mb-4">
         <input
@@ -31,8 +38,12 @@ const App = () => {
           className="outline-none w-full py-1 px-3"
           placeholder="DogeToTheMoon"
           readOnly
+          ref={passwordRef}
         />
-        <button className="outline-none bg-blue-700 text-white px-3 py-1 shrink-0">
+        <button
+          className="outline-none bg-blue-700 text-white px-3 py-1 shrink-0"
+          onClick={copyPasswordToClipboard}
+        >
           Copy
         </button>
       </div>
@@ -41,7 +52,7 @@ const App = () => {
           <input
             type="range"
             min={7}
-            max={70}
+            max={49}
             value={length}
             className="cursor-pointer"
             onChange={(e) => setLength(e.target.value)}
@@ -69,7 +80,7 @@ const App = () => {
           <label htmlFor="characterInput">Characters</label>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
