@@ -1,35 +1,43 @@
 import { useCallback, useState, useEffect, useRef } from "react";
+import LengthSlider from "./LengthSlider";
+import Checkbox from "./Checkbox";
+
 const App = () => {
   const [length, setLength] = useState(7);
   const [numberAllowed, setNumberAllowed] = useState(false);
   const [charAllowed, setCharAllowed] = useState(false);
   const [password, setPassword] = useState("");
-
-  const passwordGenerator = useCallback(() => {
-    let pwd = "";
-    let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    if (numberAllowed) str += "0123456789";
-    if (charAllowed) str += "!@#$%^&*-_+=[]{}~`";
-    for (let i = 1; i <= length; i++) {
-      let char = Math.floor(Math.random() * str.length + 1);
-      pwd += str.charAt(char);
-    }
-    setPassword(pwd);
-  }, [length, numberAllowed, charAllowed, setPassword]);
-
   const passwordRef = useRef(null);
 
+  // Function to generate the password
+  const passwordGenerator = useCallback(() => {
+    let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    if (numberAllowed) characters += "0123456789";
+    if (charAllowed) characters += "!@#$%^&*-_+=[]{}~`";
+
+    let generatedPassword = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      generatedPassword += characters.charAt(randomIndex);
+    }
+    setPassword(generatedPassword);
+  }, [length, numberAllowed, charAllowed]);
+
+  // Function to copy password to clipboard
   const copyPasswordToClipboard = useCallback(() => {
-    passwordRef.current?.select();
-    window.navigator.clipboard.writeText(password);
+    if (passwordRef.current) {
+      passwordRef.current.select();
+      window.navigator.clipboard.writeText(password);
+    }
   }, [password]);
 
+  // Generate password when dependencies change
   useEffect(() => {
     passwordGenerator();
   }, [length, numberAllowed, charAllowed, passwordGenerator]);
 
   return (
-    <main className=" mt-10 w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-6 text-orange-500 bg-gray-700">
+    <main className="mt-10 w-full max-w-lg mx-auto shadow-md rounded-lg px-4 py-6 text-orange-500 bg-gray-700">
       <h1 className="text-white text-center mb-2">Password Generator</h1>
       <div className="flex shadow rounded-lg overflow-hidden mb-4">
         <input
@@ -41,47 +49,26 @@ const App = () => {
           ref={passwordRef}
         />
         <button
-          className="outline-none bg-blue-700 text-white px-3 py-1 shrink-0"
+          className="outline-none bg-blue-700 text-white px-3 py-1 shrink-0 hover:bg-blue-800 transition-colors duration-300"
           onClick={copyPasswordToClipboard}
         >
           Copy
         </button>
       </div>
-      <div className="flex text-sm gap-x-2">
-        <div className="flex items-center gap-x-1">
-          <input
-            type="range"
-            min={7}
-            max={49}
-            value={length}
-            className="cursor-pointer"
-            onChange={(e) => setLength(e.target.value)}
-          />
-          <label>Length: {length}</label>
-        </div>
-        <div className="flex items-center gap-x-1">
-          <input
-            type="checkbox"
-            defaultChecked={numberAllowed}
-            id="numberInput"
-            onChange={() => {
-              setNumberAllowed(!numberAllowed);
-            }}
-          />
-          <label htmlFor="numberInput">Numbers</label>
-        </div>
-        <div className="flex items-center gap-x-1">
-          <input
-            type="checkbox"
-            id="characterInput"
-            defaultChecked={charAllowed}
-            onChange={() => setCharAllowed(!charAllowed)}
-          />
-          <label htmlFor="characterInput">Characters</label>
-        </div>
+      <div className="flex text-sm gap-x-2 text-nowrap">
+        <LengthSlider length={length} setLength={setLength} />
+        <Checkbox
+          label="Include Numbers"
+          checked={numberAllowed}
+          onChange={() => setNumberAllowed((prev) => !prev)}
+        />
+        <Checkbox
+          label="Include Characters"
+          checked={charAllowed}
+          onChange={() => setCharAllowed((prev) => !prev)}
+        />
       </div>
     </main>
   );
 };
-
 export default App;
